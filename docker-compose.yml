@@ -1,0 +1,24 @@
+services:
+  rule-evaluator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: compliance-rule-evaluator:latest
+    container_name: compliance-rule-evaluator
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    # Fully local service: no environment secrets, accounts or paid
+    # third-party services required.
+    environment:
+      PYTHONUNBUFFERED: "1"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,urllib.request,sys; sys.exit(0 if json.load(urllib.request.urlopen('http://127.0.0.1:8000/health'))['status']=='ok' else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
